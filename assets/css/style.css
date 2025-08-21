@@ -1,8 +1,9 @@
-.progressBar {
-  background-color: #ea4c89 !important; /* Rosa, por exemplo */
+body {
+  --playback-logo-image: url('http://some/image.png');
 }
-
-
-.background {
-  background-color: #000;
+cast-media-player {
+  --theme-hue: 100;
+  --progress-color: rgb(0, 255, 0);
+  --splash-image: url('http://some/image.png');
+  --splash-size: cover;
 }
