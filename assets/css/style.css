@@ -1,9 +1,12 @@
-body {
-  --playback-logo-image: url('http://some/image.png');
+body, html, * {
+    font-family: 'Roboto', Arial, Helvetica, sans-serif !important;
 }
+
 cast-media-player {
-  --theme-hue: 100;
-  --progress-color: rgb(0, 255, 0);
-  --splash-image: url('http://some/image.png');
-  --splash-size: cover;
+    --progress-color: rgb(0, 255, 0);
+    --background-color: #000;
+}
+
+.progressBarBackground {
+  background-color: pink !important; /* cinza escuro, por exemplo */
 }
