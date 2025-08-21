@@ -187,8 +187,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
       typeof api == "string"
         ? api.replace("https://api-", "https://").replace("api/v1/", "")
         : "";
-    logo.style.backgroundImage =
-      "url(" + clientPWA + "assets/images/img-logo-horiz.webp)";
+    logo.style.backgroundImage = "url(" + clientPWA + "assets/images/img-logo-horiz.webp)";
     let link = document.getElementById("pwa-css");
     if (link == null || link == undefined || typeof link == "undefined") {
       link = document.createElement("link");

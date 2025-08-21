@@ -1,31 +1,34 @@
 <html>
 
 <head>
-    <title>EDM CAST</title>
-    <meta charset="UTF-8">
-    <!-- Cast Receiver SDK -->
-    <script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js">
-    </script>
-    <!-- Stylesheet -->
-    <link rel="stylesheet" href="/assets/css/style.css">
-    <!-- Custom Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <title>EDM CAST</title>
+  <meta charset="UTF-8">
+  <!-- Cast Receiver SDK -->
+  <!-- Web Receiver SDK -->
+  <!-- Cast Debug Logger -->
+  <script src="//www.gstatic.com/cast/sdk/libs/devtools/debug_layer/caf_receiver_logger.js"></script>
+  <script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js">
+  </script>
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <!-- Custom Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <div id="player" class="hidden">
-        <div id="logo"></div>
-        <div id="ready-to-cast"></div>
-    </div>
+  <div id="player" class="hidden">
+    <!-- <div id="logo"></div> -->
+    <div id="ready-to-cast"></div>
+  </div>
 
-    <div id="video" class="hidden">
-        <cast-media-player id="video-tag"></cast-media-player>
-    </div>
-    <div id="video-id" class="hidden"></div>
+  <div id="video" class="hidden">
+    <cast-media-player id="video-tag"></cast-media-player>
+  </div>
+  <div id="video-id" class="hidden"></div>
 
-    <script src="js/cast.js"></script>
+  <script src="js/cast.js"></script>
 </body>
 
 </html>
