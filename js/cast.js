@@ -85,14 +85,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
               const fileExtension = videoURL.split(".").pop();
               if (fileExtension == "mp4") contentType = "video/mp4";
             }
-          } else if (
-            lesson.file != null &&
-            lesson.file != undefined &&
-            lesson.file !== "" &&
-            (api.includes("vermelho") ||
-              api.includes("demo") ||
-              api.includes("rqxsystem"))
-          ) {
+          } else {
+            console.log("Caiu aqui");
             videoURL = lesson.action.url;
             contentType = "video";
             const fileExtension = videoURL.split(".").pop();
