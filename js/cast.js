@@ -25,79 +25,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
   const apiExt = ".entregadigital.app.br/api/v1/app/";
   var clientName = "verde";
 
-  const videoElement = document.getElementById("video-tag");
-  const mediaManager = new cast.framework.media.MediaManager(videoElement);
-
-  mediaManager.on(
-    cast.framework.events.EventType.LOAD,
+  // Player custom message interceptor
+  playerManager.setMessageInterceptor(
+    cast.framework.messages.MessageType.LOAD,
     (request) => {
-      video.removeAttribute("class");
-      // Debbuging
-      console.log("windowmessage: setMessageInterceptor on LOAD", request);
-      // Map contentId to entity
-      if (typeof request.media.customData != "undefined") {
-        lessonId = request.media.customData.contentId;
-        api = request.media.customData.apiURL;
-        userToken = request.media.customData.userToken;
-        isPost = request.media.customData.currentMediaType == "post";
-      }
-      if (isPost) {
-        getPostDetails(lessonId, userToken, (data) => {
-          const post = data;
-          if (typeof post.id == "undefined") return request;
-          if (post.hls != null && post.hls != undefined && post.hls !== "") {
-            videoURL = post.hls;
-            contentType = "video";
-            const fileExtension = videoURL.split(".").pop();
-            if (fileExtension == "m3u8") contentType = "application/x-mpegurl";
-            else if (fileExtension == "ts") contentType = "video/mp2t";
-            else if (fileExtension == "m4s") contentType = "video/mp4";
-          }
-          if (videoURL != "") {
-            videoElement.src = videoURL;
-            clientName = api;
-            setClientLayout(clientName);
-            videoElement.play();
-          }
-        });
-      } else {
-        getLessonDetails(lessonId, userToken, (data) => {
-          const lesson = data;
-          if (typeof lesson.id == "undefined") return request;
-          if (
-            lesson.hls != null &&
-            lesson.hls != undefined &&
-            lesson.hls !== ""
-          ) {
-            videoURL = lesson.hls;
-            contentType = "video";
-            const fileExtension = videoURL.split(".").pop();
-            if (fileExtension == "m3u8") contentType = "application/x-mpegurl";
-            else if (fileExtension == "ts") contentType = "video/mp2t";
-            else if (fileExtension == "m4s") contentType = "video/mp4";
-          } else if (
-            lesson.file != null &&
-            lesson.file != undefined &&
-            lesson.file !== "" &&
-            (api.includes("vermelho") ||
-              api.includes("demo") ||
-              api.includes("rqxsystem"))
-          ) {
-            videoURL = lesson.file;
-            contentType = "video";
-            const fileExtension = videoURL.split(".").pop();
-            if (fileExtension == "mp4") contentType = "video/mp4";
-          }
-          if (videoURL != "") {
-            videoElement.src = videoURL;
-            clientName = api;
-            setClientLayout(clientName);
-            videoElement.play();
-          }
-        });
-      }
-      return request;
-    }
+    // CHUMBA O SEU LINK AQUI:
+    request.media.contentUrl = "https://www.youtube.com/embed/bG-3bxceYqM";
+    // Se for .m3u8:
+    // request.media.contentUrl = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8";
+    request.media.contentType = "video/mp4"; // ou "application/x-mpegurl" se m3u8
+    return request;
+  }
   );
 
   playerManager.addEventListener(
@@ -115,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     (event) => {
       if (!isPost) {
         const currentTime = event.currentMediaTime;
-        const duration = videoElement.duration;
+        const duration = playerManager.getDurationSec();
         const progress = currentTime / duration;
         if (progressStand != 1 && progress > 0.95) {
           finishLesson(lessonId, 1.0, currentTime, userToken);
@@ -302,27 +240,4 @@ document.addEventListener("DOMContentLoaded", function (event) {
         api = 'https://api-saudediaria.entregadigital.app.br/api/v1/';
         setClientLayout(api)
       }, 2000);*/
-
-  const playPauseButton = document.getElementById('play-pause-button');
-  const progressBar = document.getElementById('progress-bar');
-
-  playPauseButton.addEventListener('click', () => {
-    if (videoElement.paused) {
-      videoElement.play();
-      playPauseButton.textContent = 'Pause';
-    } else {
-      videoElement.pause();
-      playPauseButton.textContent = 'Play';
-    }
-  });
-
-  videoElement.addEventListener('timeupdate', () => {
-    const progress = (videoElement.currentTime / videoElement.duration) * 100;
-    progressBar.value = progress;
-  });
-
-  progressBar.addEventListener('input', () => {
-    const seekTime = (progressBar.value / 100) * videoElement.duration;
-    videoElement.currentTime = seekTime;
-  });
 });
