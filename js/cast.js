@@ -85,26 +85,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
               const fileExtension = videoURL.split(".").pop();
               if (fileExtension == "mp4") contentType = "video/mp4";
             }
-          } else {
-            videoURL = lesson.action.url;
-            contentType = "video";
-            const fileExtension = videoURL.split(".").pop();
-            if (fileExtension == "mp4") contentType = "video/mp4";
-
-            if (videoURL.includes("youtube")) {
-              video.style.display = "none";
-
-              let iframe = document.createElement("iframe");
-              iframe.src = videoURL;
-              iframe.width = "100%";
-              iframe.height = "100%";
-              iframe.allow =
-                "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-              iframe.allowFullscreen = true;
-              iframe.style.border = "none";
-
-              document.getElementById("player").appendChild(iframe);
-            }
+          } else if (lesson.action && lesson.action.url) {
+            // Aqui você decide exibir no iframe
+            showIframePlayer(lesson.action.url);
+            // Não precisa setar request.media!
+            return null; // impede que o CAF tente tocar algo
           }
           if (videoURL != "") {
             request.media.contentUrl = videoURL;
@@ -296,6 +281,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
       callback(JSON.parse([]));
     };
     xmlHttp.send(null);
+  }
+
+  function showIframePlayer(url) {
+    document.getElementById("video").style.display = "none";
+    document.getElementById("iframe-wrapper").style.display = "block";
+    document.getElementById("iframe-player").src = url;
+  }
+
+  function showCastPlayer() {
+    document.getElementById("iframe-wrapper").style.display = "none";
+    document.getElementById("video").style.display = "block";
   }
 
   /*if (true) {
