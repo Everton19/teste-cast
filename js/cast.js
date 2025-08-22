@@ -66,6 +66,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
             lesson.hls != undefined &&
             lesson.hls !== ""
           ) {
+            showCastPlayer();
             videoURL = lesson.hls;
             contentType = "video";
             const fileExtension = videoURL.split(".").pop();
@@ -80,6 +81,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 api.includes("demo") ||
                 api.includes("rqxsystem"))
             ) {
+              showCastPlayer();
               videoURL = lesson.file;
               contentType = "video";
               const fileExtension = videoURL.split(".").pop();
