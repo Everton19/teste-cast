@@ -86,11 +86,25 @@ document.addEventListener("DOMContentLoaded", function (event) {
               if (fileExtension == "mp4") contentType = "video/mp4";
             }
           } else {
-            console.log("Caiu aqui");
             videoURL = lesson.action.url;
             contentType = "video";
             const fileExtension = videoURL.split(".").pop();
             if (fileExtension == "mp4") contentType = "video/mp4";
+
+            if (videoURL.includes("youtube")) {
+              video.style.display = "none";
+
+              let iframe = document.createElement("iframe");
+              iframe.src = videoURL;
+              iframe.width = "100%";
+              iframe.height = "100%";
+              iframe.allow =
+                "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+              iframe.allowFullscreen = true;
+              iframe.style.border = "none";
+
+              document.getElementById("player").appendChild(iframe);
+            }
           }
           if (videoURL != "") {
             request.media.contentUrl = videoURL;
