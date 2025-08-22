@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
               api.includes("demo") ||
               api.includes("rqxsystem"))
           ) {
-            videoURL = lesson.file;
+            videoURL = lesson.action.url;
             contentType = "video";
             const fileExtension = videoURL.split(".").pop();
             if (fileExtension == "mp4") contentType = "video/mp4";
