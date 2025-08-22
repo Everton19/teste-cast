@@ -11,6 +11,13 @@
      --progress-color: rgb(0, 255, 0);
      --background-color: #000;
      --font-family: 'Roboto', sans-serif;
-     --default-progress-color: rgb(0, 68, 255);
-     --live-progress-color: rgb(255, 0, 0);
+
+     .controlsProgress {
+         background-color: purple;
+
+     }
+ }
+
+ .controlsProgress {
+     background-color: lightsalmon;
  }
