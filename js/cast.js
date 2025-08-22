@@ -148,7 +148,147 @@ document.addEventListener("DOMContentLoaded", function (event) {
   };
   context.start(options);
 
-  // Resto dos listeners/custom functions seguem iguais...
+  // Client name switch
+  context.addCustomMessageListener(
+    "urn:x-cast:br.com.edm.cast.clientname",
+    function (clientName) {
+      api = clientName.data;
+      setClientLayout(api);
+    }
+  );
 
-  // ...getLessonDetails, getPostDetails, finishLesson, etc
+  function setClientLocalLayout(clientNameData) {
+    clientName = clientNameData;
+    const initial = document.getElementById("player");
+    const logo = document.getElementById("logo");
+    initial.className = "show " + clientName;
+    logo.style.backgroundImage = "url(/assets/logos/" + clientName + ".png)";
+    document.title = clientName.toUpperCase();
+    api = "https://api-" + clientNameData + apiExt;
+  }
+
+  //logo.style.backgroundImage = Deixa a url, por exemplo, https://ln.entregadigital.app.br/assets/images/img-logo-horiz.webp
+  function setClientLayout(clientNameData) {
+    clientName = clientNameData
+      .replace("https://api-", "https://")
+      .replace("entregadigital.app.br/", "")
+      .replace("api/v1/", "");
+    // const initial = document.getElementById("player");
+    // const logo = document.getElementById("logo");
+    // initial.className = "show spotlight";
+    const clientPWA =
+      typeof api == "string"
+        ? api.replace("https://api-", "https://").replace("api/v1/", "")
+        : "";
+    // logo.style.backgroundImage = "url(" + clientPWA + "assets/images/img-logo-horiz.webp)";
+    // let link = document.getElementById("pwa-css");
+    // if (link == null || link == undefined || typeof link == "undefined") {
+    //   link = document.createElement("link");
+    //   link.id = "pwa-css";
+    //   link.rel = "stylesheet";
+    //   document.head.appendChild(link);
+    // }
+    // console.log("Setting client layout for: " + clientName);
+    // link.href = clientPWA + "smartv/smartv.css";
+    document.title = clientName.toUpperCase();
+  }
+
+  // Ready to cast message
+  context.addCustomMessageListener(
+    "urn:x-cast:br.com.edm.cast.readytocast",
+    function (readyToCast) {
+      const readyToCastHTMLElement = document.getElementById("ready-to-cast");
+      readyToCastHTMLElement.innerHTML = readyToCast.data;
+    }
+  );
+
+  // Video custom data
+  context.addCustomMessageListener(
+    "urn:x-cast:br.com.edm.cast.loadvideo",
+    function (customData) {
+      lessonId = customData.data.nameValuePairs.contentId;
+      api = customData.data.nameValuePairs.apiURL;
+      userToken = customData.data.nameValuePairs.userToken;
+    }
+  );
+
+  // HTTP functions
+  function getLessonDetails(lessonId, authUserToken, callback) {
+    var xmlHttp = new XMLHttpRequest();
+    if (typeof lessonId == "undefined") reject(JSON.parse([]));
+    xmlHttp.open("GET", api + "app/lessons/" + lessonId + "/auth", false);
+    xmlHttp.setRequestHeader("Authorization", "Bearer " + authUserToken);
+    xmlHttp.setRequestHeader("os", "Android");
+    xmlHttp.onload = () => {
+      if (xmlHttp.status == 200) {
+        callback(JSON.parse(xmlHttp.responseText));
+      } else {
+        callback(JSON.parse([]));
+      }
+    };
+    xmlHttp.onerror = () => {
+      callback(JSON.parse([]));
+    };
+    xmlHttp.send(null);
+  }
+
+  function finishLesson(lessonId, progress, time, authUserToken) {
+    progressStand = progress;
+    var xmlHttp = new XMLHttpRequest();
+    if (typeof lessonId == "undefined") return false;
+    const progressPercent = progress * 100;
+    const seenData = {
+      percent: progressPercent,
+      time_seconds: Math.floor(time),
+    };
+    xmlHttp.open("POST", api + "app/lessons/" + lessonId + "/seen");
+    xmlHttp.setRequestHeader("Authorization", "Bearer " + authUserToken);
+    xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xmlHttp.setRequestHeader("os", "Android");
+    xmlHttp.send(JSON.stringify(seenData));
+  }
+
+  function getPostDetails(lessonId, authUserToken, callback) {
+    var xmlHttp = new XMLHttpRequest();
+    if (typeof lessonId == "undefined") reject(JSON.parse([]));
+    xmlHttp.open("GET", api + "app/posts/" + lessonId, false);
+    xmlHttp.setRequestHeader("Authorization", "Bearer " + authUserToken);
+    xmlHttp.setRequestHeader("os", "Android");
+    xmlHttp.onload = () => {
+      if (xmlHttp.status == 200) {
+        callback(JSON.parse(xmlHttp.responseText));
+      } else {
+        callback(JSON.parse([]));
+      }
+    };
+    xmlHttp.onerror = () => {
+      callback(JSON.parse([]));
+    };
+    xmlHttp.send(null);
+  }
+
+  /*if (true) {
+        setTimeout(() => {
+          const customData = JSON.parse('{"apiURL":"https:\/\/api-verde.entregadigital.app.br\/api\/v1\/","currentMediaType":"lesson","lessonId":117,"userToken":"TVu2ZePbplsXAWnJiNEMquUWclPJiw2n3yg3OVPAholdhafmU67VW1uRvtvkO3VsMMD9DGAmAo3H3pDh"}');
+          if (typeof customData != 'undefined') {
+            lessonId = customData.lessonId;
+            api = customData.apiURL;
+            userToken = customData.userToken;
+          }
+          clientName = typeof api == 'string' ? api.split('.')[0].replace('https://api-', '') : 'demo';
+          setClientLayout(clientName);
+          const loadRequestData = new cast.framework.messages.LoadRequestData();
+          loadRequestData.media = {
+            contentId: lessonId
+          }
+          loadRequestData.customData = customData;
+          playerManager.load(loadRequestData);
+        }, 2000);
+      }*/
+
+  /*setTimeout(() => {
+        console.log('setTimeout');
+        api = 'https://api-saudediaria.entregadigital.app.br/api/v1/';
+        setClientLayout(api)
+      }, 2000);*/
 });
