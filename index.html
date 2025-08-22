@@ -1,57 +1,33 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <title>EDM CAST</title>
-    <!-- CAF Receiver SDK -->
-    <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
-    <!-- Estilos e fontes -->
-    <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            background: #000;
-            color: #fff;
-            font-family: 'Roboto', Arial, sans-serif;
-            margin: 0; padding: 0;
-            width: 100vw; height: 100vh; overflow: hidden;
-        }
-        #media {
-            width: 100vw;
-            height: 100vh;
-            object-fit: contain;
-            background: #000;
-        }
-        #controls-bar {
-            position: absolute;
-            left: 0; right: 0; bottom: 20px;
-            width: 80vw; margin: auto;
-        }
-        #progress {
-            background: #222;
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        #progress-bar {
-            background: #00ff00;
-            height: 100%;
-            width: 0;
-            transition: width .2s;
-        }
-        /* Esconda controles nativos se preferir custom */
-        video::-webkit-media-controls { display:none !important; }
-        video::-moz-media-controls { display:none !important; }
-    </style>
+  <title>EDM CAST</title>
+  <meta charset="UTF-8">
+  <!-- Cast Receiver SDK -->
+  <!-- Web Receiver SDK -->
+  <!-- Cast Debug Logger -->
+  <script src="//www.gstatic.com/cast/sdk/libs/devtools/debug_layer/caf_receiver_logger.js"></script>
+  <script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js">
+  </script>
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <!-- Custom Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    <video id="media"></video>
-    <div id="controls-bar">
-        <div id="progress"><div id="progress-bar"></div></div>
-        <!-- Adicione botões custom se quiser -->
+  <div id="video" class="hidden">
+    <video id="video-tag"></video>
+    <div id="video-controls">
+      <button id="play-pause-button">Play</button>
+      <input type="range" id="progress-bar" value="0">
     </div>
-    <script src="/js/cast.js"></script>
+  </div>
+  <div id="video-id" class="hidden"></div>
+
+  <script src="js/cast.js"></script>
 </body>
+
 </html>

@@ -1,32 +1,39 @@
 document.addEventListener("DOMContentLoaded", function (event) {
+  // Setting initial BG Image
+  //document.body.style.backgroundImage = 'url(/assets/images/bg01.jpg)';
+
   // Main cast variables
   const context = cast.framework.CastReceiverContext.getInstance();
   const playerManager = context.getPlayerManager();
 
-  // HTML elements and variables
-  const media = document.getElementById("media"); // use 'media', não "video"
-  const progressBar = document.getElementById("progress-bar"); // barra custom, se tiver
-  
-  // LIGA O ELEMENTO <video> COM O PLAYER CAF:
-  playerManager.setMediaElement(media);
-
-  // Restante das variáveis...
+  // Browse content
   document.title = "EDM CAST";
+
+  // HTML elements and variables
+  const video = document.getElementById("video");
   var videoURL = "_blank";
   var contentType = "";
+
+  // Client variables
   var lessonId = 0;
   var userToken = "";
   var progressStand = -1;
   var isPost = false;
+
+  // API variables
   var api = "https://api-verde.entregadigital.app.br/api/v1/";
   const apiExt = ".entregadigital.app.br/api/v1/app/";
   var clientName = "verde";
 
-  // Player custom message interceptor
-  playerManager.setMessageInterceptor(
-    cast.framework.messages.MessageType.LOAD,
+  const videoElement = document.getElementById("video-tag");
+  const mediaManager = new cast.framework.media.MediaManager(videoElement);
+
+  mediaManager.on(
+    cast.framework.events.EventType.LOAD,
     (request) => {
-      // Não é necessário "removeAttribute('class')" no <video>, só se você quer garantir .hidden
+      video.removeAttribute("class");
+      // Debbuging
+      console.log("windowmessage: setMessageInterceptor on LOAD", request);
       // Map contentId to entity
       if (typeof request.media.customData != "undefined") {
         lessonId = request.media.customData.contentId;
@@ -38,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         getPostDetails(lessonId, userToken, (data) => {
           const post = data;
           if (typeof post.id == "undefined") return request;
-          if (post.hls) {
+          if (post.hls != null && post.hls != undefined && post.hls !== "") {
             videoURL = post.hls;
             contentType = "video";
             const fileExtension = videoURL.split(".").pop();
@@ -47,16 +54,21 @@ document.addEventListener("DOMContentLoaded", function (event) {
             else if (fileExtension == "m4s") contentType = "video/mp4";
           }
           if (videoURL != "") {
-            request.media.contentUrl = videoURL;
+            videoElement.src = videoURL;
             clientName = api;
             setClientLayout(clientName);
+            videoElement.play();
           }
         });
       } else {
         getLessonDetails(lessonId, userToken, (data) => {
           const lesson = data;
           if (typeof lesson.id == "undefined") return request;
-          if (lesson.hls) {
+          if (
+            lesson.hls != null &&
+            lesson.hls != undefined &&
+            lesson.hls !== ""
+          ) {
             videoURL = lesson.hls;
             contentType = "video";
             const fileExtension = videoURL.split(".").pop();
@@ -64,7 +76,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
             else if (fileExtension == "ts") contentType = "video/mp2t";
             else if (fileExtension == "m4s") contentType = "video/mp4";
           } else if (
-            lesson.file && (api.includes("vermelho") ||
+            lesson.file != null &&
+            lesson.file != undefined &&
+            lesson.file !== "" &&
+            (api.includes("vermelho") ||
               api.includes("demo") ||
               api.includes("rqxsystem"))
           ) {
@@ -74,9 +89,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
             if (fileExtension == "mp4") contentType = "video/mp4";
           }
           if (videoURL != "") {
-            request.media.contentUrl = videoURL;
+            videoElement.src = videoURL;
             clientName = api;
             setClientLayout(clientName);
+            videoElement.play();
           }
         });
       }
@@ -88,25 +104,18 @@ document.addEventListener("DOMContentLoaded", function (event) {
     cast.framework.events.EventType.PLAYER_LOAD_COMPLETE,
     (event) => {
       console.log("PLAYER_LOAD_COMPLETE");
+      const castMediaElement = document.getElementById("castMediaElement");
+      console.log(castMediaElement);
     }
   );
 
-  // Atualiza sua barra de progresso custom
-  if (progressBar) {
-    media.ontimeupdate = function() {
-      if (media.duration) {
-        progressBar.style.width = (media.currentTime / media.duration * 100) + "%";
-      }
-    };
-  }
-
-  // Player: lesson seen (tudo igual)
+  // Player: lesson seen
   playerManager.addEventListener(
     cast.framework.events.EventType.TIME_UPDATE,
     (event) => {
       if (!isPost) {
         const currentTime = event.currentMediaTime;
-        const duration = playerManager.getDurationSec();
+        const duration = videoElement.duration;
         const progress = currentTime / duration;
         if (progressStand != 1 && progress > 0.95) {
           finishLesson(lessonId, 1.0, currentTime, userToken);
@@ -135,7 +144,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
   );
 
-  // CONTEXT CUSTOM MESSAGES RECEIVERS
+  /* CONTEXT CUSTOM MESSAGES RECEIVERS */
+
+  // Initialize context with custom messages
   var options = {
     customNamespaces: {
       "urn:x-cast:br.com.edm.cast.clientname":
@@ -291,4 +302,27 @@ document.addEventListener("DOMContentLoaded", function (event) {
         api = 'https://api-saudediaria.entregadigital.app.br/api/v1/';
         setClientLayout(api)
       }, 2000);*/
+
+  const playPauseButton = document.getElementById('play-pause-button');
+  const progressBar = document.getElementById('progress-bar');
+
+  playPauseButton.addEventListener('click', () => {
+    if (videoElement.paused) {
+      videoElement.play();
+      playPauseButton.textContent = 'Pause';
+    } else {
+      videoElement.pause();
+      playPauseButton.textContent = 'Play';
+    }
+  });
+
+  videoElement.addEventListener('timeupdate', () => {
+    const progress = (videoElement.currentTime / videoElement.duration) * 100;
+    progressBar.value = progress;
+  });
+
+  progressBar.addEventListener('input', () => {
+    const seekTime = (progressBar.value / 100) * videoElement.duration;
+    videoElement.currentTime = seekTime;
+  });
 });

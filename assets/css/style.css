@@ -1,0 +1,33 @@
+body,
+ html {
+     width: 100vw;
+     height: 100vh;
+     margin: 0;
+     font-family: 'Roboto', sans-serif;
+     overflow: hidden;
+ }
+
+ #video-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+}
+
+#play-pause-button {
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+#progress-bar {
+  width: 500px;
+  margin-left: 10px;
+}
