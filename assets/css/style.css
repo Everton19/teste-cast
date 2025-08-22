@@ -9,6 +9,11 @@
 
  cast-media-player {
      --progress-color: rgb(0, 255, 0);
+     --secondary-progress-color: rgba(255, 255, 255, 0.3);
      --background-color: #000;
+     --title-color: #0f0;
+     /* verde */
+     --subtitle-color: #aaa;
+     /* cinza claro */
      --font-family: 'Roboto', sans-serif;
  }
