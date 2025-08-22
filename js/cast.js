@@ -30,10 +30,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
     cast.framework.messages.MessageType.LOAD,
     (request) => {
     // CHUMBA O SEU LINK AQUI:
-    request.media.contentUrl = "https://www.youtube.com/embed/bG-3bxceYqM";
-    // Se for .m3u8:
-    // request.media.contentUrl = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8";
-    request.media.contentType = "video/mp4"; // ou "application/x-mpegurl" se m3u8
+    request.media.contentUrl = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+request.media.contentType = "video/mp4";
     return request;
   }
   );
