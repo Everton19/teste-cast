@@ -72,6 +72,19 @@ document.addEventListener("DOMContentLoaded", function (event) {
             if (fileExtension == "m3u8") contentType = "application/x-mpegurl";
             else if (fileExtension == "ts") contentType = "video/mp2t";
             else if (fileExtension == "m4s") contentType = "video/mp4";
+            else if (
+              lesson.file != null &&
+              lesson.file != undefined &&
+              lesson.file !== "" &&
+              (api.includes("vermelho") ||
+                api.includes("demo") ||
+                api.includes("rqxsystem"))
+            ) {
+              videoURL = lesson.file;
+              contentType = "video";
+              const fileExtension = videoURL.split(".").pop();
+              if (fileExtension == "mp4") contentType = "video/mp4";
+            }
           } else if (
             lesson.file != null &&
             lesson.file != undefined &&
@@ -90,6 +103,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
             clientName = api;
             setClientLayout(clientName);
           }
+
+          console.log("LOAD request final:", request);
+          console.log("URL escolhida:", videoURL, "tipo:", contentType);
         });
       }
       return request;
