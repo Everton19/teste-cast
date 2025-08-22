@@ -29,11 +29,71 @@ document.addEventListener("DOMContentLoaded", function (event) {
   playerManager.setMessageInterceptor(
     cast.framework.messages.MessageType.LOAD,
     (request) => {
-    // CHUMBA O SEU LINK AQUI:
-    request.media.contentUrl = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-request.media.contentType = "video/mp4";
-    return request;
-  }
+      video.removeAttribute("class");
+      // Debbuging
+      console.log("windowmessage: setMessageInterceptor on LOAD", request);
+      // Map contentId to entity
+      if (typeof request.media.customData != "undefined") {
+        lessonId = request.media.customData.contentId;
+        api = request.media.customData.apiURL;
+        userToken = request.media.customData.userToken;
+        isPost = request.media.customData.currentMediaType == "post";
+      }
+      if (isPost) {
+        getPostDetails(lessonId, userToken, (data) => {
+          const post = data;
+          if (typeof post.id == "undefined") return request;
+          if (post.hls != null && post.hls != undefined && post.hls !== "") {
+            videoURL = post.hls;
+            contentType = "video";
+            const fileExtension = videoURL.split(".").pop();
+            if (fileExtension == "m3u8") contentType = "application/x-mpegurl";
+            else if (fileExtension == "ts") contentType = "video/mp2t";
+            else if (fileExtension == "m4s") contentType = "video/mp4";
+          }
+          if (videoURL != "") {
+            request.media.contentUrl = videoURL;
+            clientName = api;
+            setClientLayout(clientName);
+          }
+        });
+      } else {
+        getLessonDetails(lessonId, userToken, (data) => {
+          const lesson = data;
+          if (typeof lesson.id == "undefined") return request;
+          if (
+            lesson.hls != null &&
+            lesson.hls != undefined &&
+            lesson.hls !== ""
+          ) {
+            videoURL = lesson.hls;
+            contentType = "video";
+            const fileExtension = videoURL.split(".").pop();
+            if (fileExtension == "m3u8") contentType = "application/x-mpegurl";
+            else if (fileExtension == "ts") contentType = "video/mp2t";
+            else if (fileExtension == "m4s") contentType = "video/mp4";
+          } else if (
+            lesson.file != null &&
+            lesson.file != undefined &&
+            lesson.file !== "" &&
+            (api.includes("vermelho") ||
+              api.includes("demo") ||
+              api.includes("rqxsystem"))
+          ) {
+            videoURL = lesson.file;
+            contentType = "video";
+            const fileExtension = videoURL.split(".").pop();
+            if (fileExtension == "mp4") contentType = "video/mp4";
+          }
+          if (videoURL != "") {
+            request.media.contentUrl = videoURL;
+            clientName = api;
+            setClientLayout(clientName);
+          }
+        });
+      }
+      return request;
+    }
   );
 
   playerManager.addEventListener(
