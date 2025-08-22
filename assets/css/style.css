@@ -1,6 +1,16 @@
-cast-media-player {
-    --progress-color: rgb(0, 255, 0);
-    --background-color: #000;
-    --font-family: 'Roboto', sans-serif;
-    --progress-bar-background: #cc2230;
-}
+ body,
+ html {
+     width: 100vw;
+     height: 100vh;
+     margin: 0;
+     font-family: 'Roboto', sans-serif;
+     overflow: hidden;
+ }
+
+ cast-media-player {
+     --progress-color: rgb(0, 255, 0);
+     --background-color: #000;
+     --font-family: 'Roboto', sans-serif;
+     --font-color: #FF00AA;
+     --progress-bar-background: #cc2230;
+ }

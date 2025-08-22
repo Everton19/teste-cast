@@ -180,23 +180,23 @@ document.addEventListener("DOMContentLoaded", function (event) {
       .replace("https://api-", "https://")
       .replace("entregadigital.app.br/", "")
       .replace("api/v1/", "");
-    const initial = document.getElementById("player");
-    const logo = document.getElementById("logo");
-    initial.className = "show spotlight";
+    // const initial = document.getElementById("player");
+    // const logo = document.getElementById("logo");
+    // initial.className = "show spotlight";
     const clientPWA =
       typeof api == "string"
         ? api.replace("https://api-", "https://").replace("api/v1/", "")
         : "";
-    logo.style.backgroundImage = "url(" + clientPWA + "assets/images/img-logo-horiz.webp)";
-    let link = document.getElementById("pwa-css");
-    if (link == null || link == undefined || typeof link == "undefined") {
-      link = document.createElement("link");
-      link.id = "pwa-css";
-      link.rel = "stylesheet";
-      document.head.appendChild(link);
-    }
-    console.log("Setting client layout for: " + clientName);
-    link.href = clientPWA + "smartv/smartv.css";
+    // logo.style.backgroundImage = "url(" + clientPWA + "assets/images/img-logo-horiz.webp)";
+    // let link = document.getElementById("pwa-css");
+    // if (link == null || link == undefined || typeof link == "undefined") {
+    //   link = document.createElement("link");
+    //   link.id = "pwa-css";
+    //   link.rel = "stylesheet";
+    //   document.head.appendChild(link);
+    // }
+    // console.log("Setting client layout for: " + clientName);
+    // link.href = clientPWA + "smartv/smartv.css";
     document.title = clientName.toUpperCase();
   }
 
