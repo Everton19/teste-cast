@@ -166,6 +166,19 @@ document.addEventListener("DOMContentLoaded", function (event) {
   };
   context.start(options);
 
+  // Suponha que seu namespace seja 'urn:x-cast:br.com.edm.cast.controls'
+  context.addCustomMessageListener(
+    "urn:x-cast:br.com.edm.cast.controls",
+    function (event) {
+      console.log("Comando RECEBIDO no Chromecast:", event.data);
+      var iframe = document.getElementById("iframe-player");
+      if (iframe) {
+        console.log("-> Repassando para o player via postMessage");
+        iframe.contentWindow.postMessage(event.data, "*");
+      }
+    }
+  );
+
   // Client name switch
   context.addCustomMessageListener(
     "urn:x-cast:br.com.edm.cast.clientname",
