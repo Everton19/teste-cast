@@ -31,6 +31,7 @@ window.addEventListener('message', function(event) {
         console.log("Nova sessão de mídia iniciada para o iframe.");
     }
 
+    
     if (typeof event.data === 'string' && event.data.startsWith('currentTime:')) {
         const currentTime = parseFloat(event.data.split(':')[1]);
         const mediaSession = playerManager.getMediaSession();
