@@ -107,46 +107,42 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
   );
 
- // NOVO: Intercepta o comando de PAUSE e envia para o iframe
-  playerManager.setMessageInterceptor(
-    cast.framework.messages.MessageType.PAUSE,
-    (request) => {
-      const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
-      const iframe = document.getElementById("iframe-player");
-      const isYouTube = iframe && iframe.src.includes('youtube');
+ // Substitua o trecho de código em cast.js por este:
+// NOVO: Intercepta o comando de PAUSE e envia para o iframe
+playerManager.setMessageInterceptor(
+  cast.framework.messages.MessageType.PAUSE,
+  (request) => {
+    const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+    const iframe = document.getElementById("iframe-player");
+    const isYouTube = iframe && iframe.src.includes('youtube');
 
-      if (isIframeMode && isYouTube) {
-        // Envia a mensagem de "pause" para o iframe no formato da API do YouTube
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: "command", func: "pause_video" }),
-          "*"
-        );
-        // Retorna null para que o CAF não tente pausar o cast-media-player
-        return null;
-      }
-      return request;
+    if (isIframeMode && isYouTube) {
+      // Envia a mensagem de "pause" para o iframe
+      iframe.contentWindow.postMessage('pause_video', '*');
+      console.log("Comando de PAUSE repassado para o iframe.");
+      return null;
     }
-  );
+    return request;
+  }
+);
 
-  // NOVO: Intercepta o comando de PLAY e envia para o iframe
-  playerManager.setMessageInterceptor(
-    cast.framework.messages.MessageType.PLAY,
-    (request) => {
-      const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
-      const iframe = document.getElementById("iframe-player");
-      const isYouTube = iframe && iframe.src.includes('youtube');
+// NOVO: Intercepta o comando de PLAY e envia para o iframe
+playerManager.setMessageInterceptor(
+  cast.framework.messages.MessageType.PLAY,
+  (request) => {
+    const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+    const iframe = document.getElementById("iframe-player");
+    const isYouTube = iframe && iframe.src.includes('youtube');
 
-      if (isIframeMode && isYouTube) {
-        // Envia a mensagem de "play" para o iframe no formato da API do YouTube
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: "command", func: "begin_video" }),
-          "*"
-        );
-        return null;
-      }
-      return request;
+    if (isIframeMode && isYouTube) {
+      // Envia a mensagem de "begin_video" para o iframe
+      iframe.contentWindow.postMessage('begin_video', '*');
+      console.log("Comando de PLAY repassado para o iframe.");
+      return null;
     }
-  );
+    return request;
+  }
+);
 
   playerManager.addEventListener(
     cast.framework.events.EventType.PLAYER_LOAD_COMPLETE,
