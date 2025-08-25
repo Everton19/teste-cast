@@ -36,7 +36,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const videoId = urlParams.get('video_id');
         const host = urlParams.get('host');
-
+        console.log('URL:', window.location.href);
         let embedId = '';
         if (host === 'youtube') {
             console.log('Host é YouTube');
