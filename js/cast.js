@@ -107,13 +107,14 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
   );
 
- // NOVO: Intercepta o comando de PAUSE e envia para o iframe
+  // NOVO: Intercepta o comando de PAUSE e envia para o iframe
   playerManager.setMessageInterceptor(
     cast.framework.messages.MessageType.PAUSE,
     (request) => {
-      const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+      const isIframeMode =
+        document.getElementById("iframe-wrapper").style.display === "block";
       const iframe = document.getElementById("iframe-player");
-      const isYouTube = iframe && iframe.src.includes('youtube');
+      const isYouTube = iframe && iframe.src.includes("youtube");
 
       if (isIframeMode && isYouTube) {
         // Envia a mensagem de "pause" para o iframe no formato da API do YouTube
@@ -132,9 +133,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
   playerManager.setMessageInterceptor(
     cast.framework.messages.MessageType.PLAY,
     (request) => {
-      const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+      const isIframeMode =
+        document.getElementById("iframe-wrapper").style.display === "block";
       const iframe = document.getElementById("iframe-player");
-      const isYouTube = iframe && iframe.src.includes('youtube');
+      const isYouTube = iframe && iframe.src.includes("youtube");
 
       if (isIframeMode && isYouTube) {
         // Envia a mensagem de "play" para o iframe no formato da API do YouTube
@@ -340,15 +342,23 @@ document.addEventListener("DOMContentLoaded", function (event) {
   }
 
   function showIframePlayer(url) {
+    // Extrai os parâmetros necessários da URL original do seu player web
+    const urlParams = new URLSearchParams(url);
+    const videoId = urlParams.get("video_id");
+    const host = urlParams.get("host");
+    const token = urlParams.get("token");
+
+    // Constrói a URL para a sua nova página de proxy (proxy.html)
+    // OBS: Substitua 'localhost:3000' pelo domínio real do seu Vercel quando estiver em produção
+    const proxyUrl = `https://teste-cast.vercel.app/proxy.html?video_id=${videoId}&host=${host}&token=${token}`;
+
     document.getElementById("video").style.display = "none";
     document.getElementById("iframe-wrapper").style.display = "block";
-    document.getElementById("iframe-player").src = url;
+    document.getElementById("iframe-player").src = proxyUrl;
   }
 
   function showCastPlayer() {
     document.getElementById("iframe-wrapper").style.display = "none";
     document.getElementById("video").style.display = "block";
   }
-
-
 });
