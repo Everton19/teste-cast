@@ -3,20 +3,56 @@ document.addEventListener("DOMContentLoaded", function (event) {
   //document.body.style.backgroundImage = 'url(/assets/images/bg01.jpg)';
 // Dentro de cast.js, no evento 'DOMContentLoaded'
 
+// No seu cast.js, dentro de `document.addEventListener("DOMContentLoaded", ...)`
+
 window.addEventListener('message', function(event) {
-    // Garantir que a mensagem é do iframe esperado
+    if (event.data === 'playerIsReadyToPlay') {
+        const currentTime = event.detail.plyr.currentTime;
+        const duration = event.detail.plyr.duration;
+        const mediaInformation = new cast.framework.messages.MediaInformation({
+            contentId: 'youtube_video_' + lessonId, // Use um ID único
+            contentType: 'video/mp4', // Ou 'video/youtube' se houver um tipo específico
+            duration: duration,
+            contentUrl: document.getElementById("iframe-player").src,
+            streamType: cast.framework.messages.StreamType.BUFFERED,
+            media: new cast.framework.messages.MediaMetadata(
+                cast.framework.messages.MediaMetadata.MediaMetadataType.GENERIC
+            )
+        });
 
-    console.log('Mensagem recebida do iframe:', event.data);
+        // Cria uma nova sessão de mídia
+        const mediaSession = playerManager.createMediaSession(mediaInformation);
+        // Atualiza o estado para PLAYING
+        mediaSession.playerState = cast.framework.messages.PlayerState.PLAYING;
+        // Atualiza o tempo de reprodução
+        mediaSession.currentTime = currentTime;
 
-    // Atualize o estado do playerManager
-    if (event.data === 'playing_video') {
-        playerManager.setPlayerState(cast.framework.messages.PlayerState.PLAYING);
-        console.log("Estado atualizado: PLAYING");
-    } else if (event.data === 'paused_video') {
-        playerManager.setPlayerState(cast.framework.messages.PlayerState.PAUSED);
-        console.log("Estado atualizado: PAUSED");
+        playerManager.broadcastStatus(true);
+        console.log("Nova sessão de mídia iniciada para o iframe.");
     }
-    // Para a barra de progresso, você também pode atualizar a currentTime aqui
+
+    if (typeof event.data === 'string' && event.data.startsWith('currentTime:')) {
+        const currentTime = parseFloat(event.data.split(':')[1]);
+        const mediaSession = playerManager.getMediaSession();
+        if (mediaSession) {
+            mediaSession.currentTime = currentTime;
+            playerManager.broadcastStatus(false);
+        }
+    }
+    if (event.data === 'playing_video') {
+        const mediaSession = playerManager.getMediaSession();
+        if (mediaSession) {
+            mediaSession.playerState = cast.framework.messages.PlayerState.PLAYING;
+            playerManager.broadcastStatus(false);
+        }
+    }
+    if (event.data === 'paused_video') {
+        const mediaSession = playerManager.getMediaSession();
+        if (mediaSession) {
+            mediaSession.playerState = cast.framework.messages.PlayerState.PAUSED;
+            playerManager.broadcastStatus(false);
+        }
+    }
 });
   // Main cast variables
   const context = cast.framework.CastReceiverContext.getInstance();
