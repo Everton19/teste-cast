@@ -1,7 +1,23 @@
 document.addEventListener("DOMContentLoaded", function (event) {
   // Setting initial BG Image
   //document.body.style.backgroundImage = 'url(/assets/images/bg01.jpg)';
+// Dentro de cast.js, no evento 'DOMContentLoaded'
 
+window.addEventListener('message', function(event) {
+    // Garantir que a mensagem é do iframe esperado
+
+    console.log('Mensagem recebida do iframe:', event.data);
+
+    // Atualize o estado do playerManager
+    if (event.data === 'playing_video') {
+        playerManager.setPlayerState(cast.framework.messages.PlayerState.PLAYING);
+        console.log("Estado atualizado: PLAYING");
+    } else if (event.data === 'paused_video') {
+        playerManager.setPlayerState(cast.framework.messages.PlayerState.PAUSED);
+        console.log("Estado atualizado: PAUSED");
+    }
+    // Para a barra de progresso, você também pode atualizar a currentTime aqui
+});
   // Main cast variables
   const context = cast.framework.CastReceiverContext.getInstance();
   const playerManager = context.getPlayerManager();
@@ -128,37 +144,21 @@ document.addEventListener("DOMContentLoaded", function (event) {
   );
 
   // NOVO: Intercepta o comando de PLAY e envia para o iframe
-  // playerManager.setMessageInterceptor(
-  //   cast.framework.messages.MessageType.PLAY,
-  //   (request) => {
-  //     const isIframeMode =
-  //       document.getElementById("iframe-wrapper").style.display === "block";
-  //     const iframe = document.getElementById("iframe-player");
-  //     const isYouTube = iframe && iframe.src.includes("youtube");
-
-  //     if (isIframeMode && isYouTube) {
-  //       // Envia a mensagem de "begin_video" para o iframe
-  //       iframe.contentWindow.postMessage("begin_video", "*");
-  //       console.log("Comando de PLAY repassado para o iframe.");
-  //       return null;
-  //     }
-  //     return request;
-  //   }
-  // );
-
-  // PLAY
   playerManager.setMessageInterceptor(
     cast.framework.messages.MessageType.PLAY,
-    (req) => {
-      const isIframe =
+    (request) => {
+      const isIframeMode =
         document.getElementById("iframe-wrapper").style.display === "block";
-      if (isIframe) {
-        document
-          .getElementById("iframe-player")
-          .contentWindow.postMessage("begin_video", "*");
+      const iframe = document.getElementById("iframe-player");
+      const isYouTube = iframe && iframe.src.includes("youtube");
+
+      if (isIframeMode && isYouTube) {
+        // Envia a mensagem de "begin_video" para o iframe
+        iframe.contentWindow.postMessage("begin_video", "*");
+        console.log("Comando de PLAY repassado para o iframe.");
         return null;
       }
-      return req;
+      return request;
     }
   );
 
