@@ -313,24 +313,23 @@ document.addEventListener("DOMContentLoaded", function (event) {
   );
 
   // HTTP functions
-  async function getLessonDetails(lessonId, authUserToken) {
-    try {
-      const response = await fetch(api + "app/lessons/" + lessonId + "/auth", {
-        headers: {
-          "Authorization": "Bearer " + authUserToken,
-          "os": "Android"
-        }
-      });
-      if (response.ok) {
-        return await response.json();
+  function getLessonDetails(lessonId, authUserToken, callback) {
+    var xmlHttp = new XMLHttpRequest();
+    if (typeof lessonId == "undefined") reject(JSON.parse([]));
+    xmlHttp.open("GET", api + "app/lessons/" + lessonId + "/auth", false);
+    xmlHttp.setRequestHeader("Authorization", "Bearer " + authUserToken);
+    xmlHttp.setRequestHeader("os", "Android");
+    xmlHttp.onload = () => {
+      if (xmlHttp.status == 200) {
+        callback(JSON.parse(xmlHttp.responseText));
       } else {
-        console.error("Erro ao buscar detalhes da lição:", response.status);
-        return null;
+        callback(JSON.parse([]));
       }
-    } catch (error) {
-      console.error("Erro na requisição da API:", error);
-      return null;
-    }
+    };
+    xmlHttp.onerror = () => {
+      callback(JSON.parse([]));
+    };
+    xmlHttp.send(null);
   }
 
   function finishLesson(lessonId, progress, time, authUserToken) {
