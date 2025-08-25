@@ -107,6 +107,47 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
   );
 
+ // NOVO: Intercepta o comando de PAUSE e envia para o iframe
+  playerManager.setMessageInterceptor(
+    cast.framework.messages.MessageType.PAUSE,
+    (request) => {
+      const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+      const iframe = document.getElementById("iframe-player");
+      const isYouTube = iframe && iframe.src.includes('youtube');
+
+      if (isIframeMode && isYouTube) {
+        // Envia a mensagem de "pause" para o iframe no formato da API do YouTube
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: "pauseVideo" }),
+          "*"
+        );
+        // Retorna null para que o CAF não tente pausar o cast-media-player
+        return null;
+      }
+      return request;
+    }
+  );
+
+  // NOVO: Intercepta o comando de PLAY e envia para o iframe
+  playerManager.setMessageInterceptor(
+    cast.framework.messages.MessageType.PLAY,
+    (request) => {
+      const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+      const iframe = document.getElementById("iframe-player");
+      const isYouTube = iframe && iframe.src.includes('youtube');
+
+      if (isIframeMode && isYouTube) {
+        // Envia a mensagem de "play" para o iframe no formato da API do YouTube
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: "playVideo" }),
+          "*"
+        );
+        return null;
+      }
+      return request;
+    }
+  );
+
   playerManager.addEventListener(
     cast.framework.events.EventType.PLAYER_LOAD_COMPLETE,
     (event) => {
@@ -309,28 +350,5 @@ document.addEventListener("DOMContentLoaded", function (event) {
     document.getElementById("video").style.display = "block";
   }
 
-  /*if (true) {
-        setTimeout(() => {
-          const customData = JSON.parse('{"apiURL":"https:\/\/api-verde.entregadigital.app.br\/api\/v1\/","currentMediaType":"lesson","lessonId":117,"userToken":"TVu2ZePbplsXAWnJiNEMquUWclPJiw2n3yg3OVPAholdhafmU67VW1uRvtvkO3VsMMD9DGAmAo3H3pDh"}');
-          if (typeof customData != 'undefined') {
-            lessonId = customData.lessonId;
-            api = customData.apiURL;
-            userToken = customData.userToken;
-          }
-          clientName = typeof api == 'string' ? api.split('.')[0].replace('https://api-', '') : 'demo';
-          setClientLayout(clientName);
-          const loadRequestData = new cast.framework.messages.LoadRequestData();
-          loadRequestData.media = {
-            contentId: lessonId
-          }
-          loadRequestData.customData = customData;
-          playerManager.load(loadRequestData);
-        }, 2000);
-      }*/
 
-  /*setTimeout(() => {
-        console.log('setTimeout');
-        api = 'https://api-saudediaria.entregadigital.app.br/api/v1/';
-        setClientLayout(api)
-      }, 2000);*/
 });
