@@ -107,46 +107,41 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
   );
 
- // NOVO: Intercepta o comando de PAUSE e envia para o iframe
-  playerManager.setMessageInterceptor(
-    cast.framework.messages.MessageType.PAUSE,
-    (request) => {
-      const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
-      const iframe = document.getElementById("iframe-player");
-      const isYouTube = iframe && iframe.src.includes('youtube');
-
-      if (isIframeMode && isYouTube) {
-        // Envia a mensagem de "pause" para o iframe no formato da API do YouTube
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: "command", func: "pause_video" }),
-          "*"
-        );
-        // Retorna null para que o CAF não tente pausar o cast-media-player
-        return null;
-      }
-      return request;
+ playerManager.setMessageInterceptor(
+  cast.framework.messages.MessageType.PAUSE,
+  (request) => {
+    // Esconda o cast-media-player e mostre o iframe
+    document.getElementById("video").style.display = "none";
+    document.getElementById("iframe-wrapper").style.display = "block";
+    
+    // Envia a mensagem 'pause_video' para o iframe
+    const iframe = document.getElementById("iframe-player");
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage('pause_video', '*');
+      console.log("Comando de PAUSE repassado para o iframe.");
     }
-  );
+    // Retorne null para que o CAF não tente pausar o player nativo
+    return null; 
+  }
+);
 
-  // NOVO: Intercepta o comando de PLAY e envia para o iframe
-  playerManager.setMessageInterceptor(
-    cast.framework.messages.MessageType.PLAY,
-    (request) => {
-      const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
-      const iframe = document.getElementById("iframe-player");
-      const isYouTube = iframe && iframe.src.includes('youtube');
+// Intercepta o comando de PLAY
+playerManager.setMessageInterceptor(
+  cast.framework.messages.MessageType.PLAY,
+  (request) => {
+    // Esconda o cast-media-player e mostre o iframe
+    document.getElementById("video").style.display = "none";
+    document.getElementById("iframe-wrapper").style.display = "block";
 
-      if (isIframeMode && isYouTube) {
-        // Envia a mensagem de "play" para o iframe no formato da API do YouTube
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: "command", func: "play_video" }),
-          "*"
-        );
-        return null;
-      }
-      return request;
+    // Envia a mensagem 'play_video' para o iframe
+    const iframe = document.getElementById("iframe-player");
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage('play_video', '*');
+      console.log("Comando de PLAY repassado para o iframe.");
     }
-  );
+    return null;
+  }
+);
 
   playerManager.addEventListener(
     cast.framework.events.EventType.PLAYER_LOAD_COMPLETE,
