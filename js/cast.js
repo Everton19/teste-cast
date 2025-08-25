@@ -25,32 +25,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
   const apiExt = ".entregadigital.app.br/api/v1/app/";
   var clientName = "verde";
 
-  function showIframePlayer(lessonData) {
-    console.log("Exibindo iframe com dados da lição:", lessonData);
-    if (!lessonData || !lessonData.action || !lessonData.action.url) {
-      console.error("Dados da lição incompletos para o iframe.");
-      return;
-    }
-
-    const url = lessonData.action.url;
-    const urlParams = new URLSearchParams(url);
-    const videoId = urlParams.get("video_id");
-    const host = urlParams.get("host");
-    const token = urlParams.get("token");
-
-    if (videoId) {
-      // Constrói a URL para a sua nova página de proxy (proxy.html)
-      const proxyUrl = `https://teste-cast.vercel.app/proxy.html?video_id=${videoId}&host=${host}&token=${token}`;
-
-      video.style.display = "none";
-      iframeWrapper.style.display = "block";
-      iframePlayer.src = proxyUrl;
-      console.log("URL do iframe definida para:", proxyUrl);
-    } else {
-      console.error("Video ID não encontrado na URL da lição.");
-    }
-  }
-
   // Player custom message interceptor
   playerManager.setMessageInterceptor(
     cast.framework.messages.MessageType.LOAD,
@@ -133,14 +107,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
   );
 
-  // NOVO: Intercepta o comando de PAUSE e envia para o iframe
+ // NOVO: Intercepta o comando de PAUSE e envia para o iframe
   playerManager.setMessageInterceptor(
     cast.framework.messages.MessageType.PAUSE,
     (request) => {
-      const isIframeMode =
-        document.getElementById("iframe-wrapper").style.display === "block";
+      const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
       const iframe = document.getElementById("iframe-player");
-      const isYouTube = iframe && iframe.src.includes("youtube");
+      const isYouTube = iframe && iframe.src.includes('youtube');
 
       if (isIframeMode && isYouTube) {
         // Envia a mensagem de "pause" para o iframe no formato da API do YouTube
@@ -159,10 +132,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
   playerManager.setMessageInterceptor(
     cast.framework.messages.MessageType.PLAY,
     (request) => {
-      const isIframeMode =
-        document.getElementById("iframe-wrapper").style.display === "block";
+      const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
       const iframe = document.getElementById("iframe-player");
-      const isYouTube = iframe && iframe.src.includes("youtube");
+      const isYouTube = iframe && iframe.src.includes('youtube');
 
       if (isIframeMode && isYouTube) {
         // Envia a mensagem de "play" para o iframe no formato da API do YouTube
@@ -365,6 +337,22 @@ document.addEventListener("DOMContentLoaded", function (event) {
       callback(JSON.parse([]));
     };
     xmlHttp.send(null);
+  }
+
+  function showIframePlayer(url) {
+    // Extrai os parâmetros necessários da URL original do seu player web
+    const urlParams = new URLSearchParams(url);
+    const videoId = urlParams.get('video_id');
+    const host = urlParams.get('host');
+    const token = urlParams.get('token');
+
+    // Constrói a URL para a sua nova página de proxy (proxy.html)
+    // OBS: Substitua 'localhost:3000' pelo domínio real do seu Vercel quando estiver em produção
+    const proxyUrl = `http://localhost:3000/proxy.html?video_id=${videoId}&host=${host}&token=${token}`;
+
+    document.getElementById("video").style.display = "none";
+    document.getElementById("iframe-wrapper").style.display = "block";
+    document.getElementById("iframe-player").src = proxyUrl;
   }
 
   function showCastPlayer() {
