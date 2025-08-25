@@ -29,63 +29,124 @@ document.addEventListener("DOMContentLoaded", function (event) {
   playerManager.setMessageInterceptor(
     cast.framework.messages.MessageType.LOAD,
     (request) => {
-    // A sua lógica de URL permanece a mesma
-    const customData = request.media.customData;
-    const isPost = customData.currentMediaType == "post";
-    
-    // O que você está buscando para decidir
-    const videoURL = customData.hls || customData.file || (isPost ? getPostDetailsSync(customData) : getLessonDetailsSync(customData));
+      video.removeAttribute("class");
+      // Debbuging
+      console.log("windowmessage: setMessageInterceptor on LOAD", request);
+      // Map contentId to entity
+      if (typeof request.media.customData != "undefined") {
+        lessonId = request.media.customData.contentId;
+        api = request.media.customData.apiURL;
+        userToken = request.media.customData.userToken;
+        isPost = request.media.customData.currentMediaType == "post";
+      }
+      if (isPost) {
+        getPostDetails(lessonId, userToken, (data) => {
+          const post = data;
+          if (typeof post.id == "undefined") return request;
+          if (post.hls != null && post.hls != undefined && post.hls !== "") {
+            videoURL = post.hls;
+            contentType = "video";
+            const fileExtension = videoURL.split(".").pop();
+            if (fileExtension == "m3u8") contentType = "application/x-mpegurl";
+            else if (fileExtension == "ts") contentType = "video/mp2t";
+            else if (fileExtension == "m4s") contentType = "video/mp4";
+          }
+          if (videoURL != "") {
+            request.media.contentUrl = videoURL;
+            clientName = api;
+            setClientLayout(clientName);
+          }
+        });
+      } else {
+        getLessonDetails(lessonId, userToken, (data) => {
+          const lesson = data;
+          if (typeof lesson.id == "undefined") return request;
+          if (
+            lesson.hls != null &&
+            lesson.hls != undefined &&
+            lesson.hls !== ""
+          ) {
+            showCastPlayer();
+            videoURL = lesson.hls;
+            contentType = "video";
+            const fileExtension = videoURL.split(".").pop();
+            if (fileExtension == "m3u8") contentType = "application/x-mpegurl";
+            else if (fileExtension == "ts") contentType = "video/mp2t";
+            else if (fileExtension == "m4s") contentType = "video/mp4";
+            else if (
+              lesson.file != null &&
+              lesson.file != undefined &&
+              lesson.file !== "" &&
+              (api.includes("vermelho") ||
+                api.includes("demo") ||
+                api.includes("rqxsystem"))
+            ) {
+              showCastPlayer();
+              videoURL = lesson.file;
+              contentType = "video";
+              const fileExtension = videoURL.split(".").pop();
+              if (fileExtension == "mp4") contentType = "video/mp4";
+            }
+          } else if (lesson.action && lesson.action.url) {
+            // Aqui você decide exibir no iframe
+            showIframePlayer(lesson.action.url);
+            // Não precisa setar request.media!
+            return null; // impede que o CAF tente tocar algo
+          }
+          if (videoURL != "") {
+            request.media.contentUrl = videoURL;
+            clientName = api;
+            setClientLayout(clientName);
+          }
 
-    if (videoURL.includes('youtube.com') || videoURL.includes('vimeo.com')) {
-      // É um player externo (iframe)
-      showIframePlayer(videoURL);
-      // Retorne null para que o player nativo do Chromecast não carregue nada
-      return null;
-    } else {
-      // É um vídeo para o player nativo do Chromecast
-      showCastPlayer();
-      // O CAF irá processar o 'request' automaticamente
-      request.media.contentUrl = videoURL;
+          console.log("LOAD request final:", request);
+          console.log("URL escolhida:", videoURL, "tipo:", contentType);
+        });
+      }
       return request;
     }
-  }
   );
 
- playerManager.setMessageInterceptor(
-  cast.framework.messages.MessageType.PAUSE,
-  (request) => {
-    // Esconda o cast-media-player e mostre o iframe
-    document.getElementById("video").style.display = "none";
-    document.getElementById("iframe-wrapper").style.display = "block";
-    
-    // Envia a mensagem 'pause_video' para o iframe
-    const iframe = document.getElementById("iframe-player");
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.postMessage('pause_video', '*');
-      console.log("Comando de PAUSE repassado para o iframe.");
-    }
-    // Retorne null para que o CAF não tente pausar o player nativo
-    return null; 
-  }
-);
+ // NOVO: Intercepta o comando de PAUSE e envia para o iframe
+  playerManager.setMessageInterceptor(
+    cast.framework.messages.MessageType.PAUSE,
+    (request) => {
+      const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+      const iframe = document.getElementById("iframe-player");
+      const isYouTube = iframe && iframe.src.includes('youtube');
 
-// Intercepta o comando de PLAY
-playerManager.setMessageInterceptor(
-  cast.framework.messages.MessageType.PLAY,
-  (request) => {
-    // Esconda o cast-media-player e mostre o iframe
-    document.getElementById("video").style.display = "none";
-    document.getElementById("iframe-wrapper").style.display = "block";
-
-    // Envia a mensagem 'play_video' para o iframe
-    const iframe = document.getElementById("iframe-player");
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.postMessage('begin_video', '*');
-      console.log("Comando de PLAY repassado para o iframe.");
+      if (isIframeMode && isYouTube) {
+        // Envia a mensagem de "pause" para o iframe no formato da API do YouTube
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: "pause_video" }),
+          "*"
+        );
+        // Retorna null para que o CAF não tente pausar o cast-media-player
+        return null;
+      }
+      return request;
     }
-    return null;
-  }
-);
+  );
+
+  // NOVO: Intercepta o comando de PLAY e envia para o iframe
+  playerManager.setMessageInterceptor(
+    cast.framework.messages.MessageType.PLAY,
+    (request) => {
+      const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+      const iframe = document.getElementById("iframe-player");
+      const isYouTube = iframe && iframe.src.includes('youtube');
+
+      if (isIframeMode && isYouTube) {
+        // Envia a mensagem de "play" para o iframe no formato da API do YouTube
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: "begin_video" }),
+          "*"
+        );
+        return null;
+      }
+      return request;
+    }
+  );
 
   playerManager.addEventListener(
     cast.framework.events.EventType.PLAYER_LOAD_COMPLETE,
