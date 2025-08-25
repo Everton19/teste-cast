@@ -340,23 +340,15 @@ document.addEventListener("DOMContentLoaded", function (event) {
   }
 
   function showIframePlayer(url) {
-    // Extrai os parâmetros necessários da URL original do seu player web
-    const urlParams = new URLSearchParams(url);
-    const videoId = urlParams.get('video_id');
-    const host = urlParams.get('host');
-    const token = urlParams.get('token');
-
-    // Constrói a URL para a sua nova página de proxy (proxy.html)
-    // OBS: Substitua 'localhost:3000' pelo domínio real do seu Vercel quando estiver em produção
-    const proxyUrl = `http://localhost:3000/proxy.html?video_id=${videoId}&host=${host}&token=${token}`;
-
     document.getElementById("video").style.display = "none";
     document.getElementById("iframe-wrapper").style.display = "block";
-    document.getElementById("iframe-player").src = proxyUrl;
+    document.getElementById("iframe-player").src = url;
   }
 
   function showCastPlayer() {
     document.getElementById("iframe-wrapper").style.display = "none";
     document.getElementById("video").style.display = "block";
   }
+
+
 });
