@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
       if (isIframeMode && isYouTube) {
         // Envia a mensagem de "pause" para o iframe no formato da API do YouTube
         iframe.contentWindow.postMessage(
-          JSON.stringify({ event: "command", func: "pauseVideo" }),
+          JSON.stringify({ event: "command", func: "pause_video" }),
           "*"
         );
         // Retorna null para que o CAF não tente pausar o cast-media-player
@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
       if (isIframeMode && isYouTube) {
         // Envia a mensagem de "play" para o iframe no formato da API do YouTube
         iframe.contentWindow.postMessage(
-          JSON.stringify({ event: "command", func: "playVideo" }),
+          JSON.stringify({ event: "command", func: "play_video" }),
           "*"
         );
         return null;
@@ -340,20 +340,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
   }
 
   function showIframePlayer(url) {
-  console.log("[Receiver] showIframePlayer", url);
-  document.getElementById("video").style.display = "none";
-  document.getElementById("iframe-wrapper").style.display = "block";
-  const iframe = document.getElementById("iframe-player");
-  iframe.src = url;
-  iframe.onload = function() {
-    console.log("[Receiver] Iframe loaded:", iframe.src);
-  };
-}
+    document.getElementById("video").style.display = "none";
+    document.getElementById("iframe-wrapper").style.display = "block";
+    document.getElementById("iframe-player").src = url;
+  }
 
   function showCastPlayer() {
     document.getElementById("iframe-wrapper").style.display = "none";
     document.getElementById("video").style.display = "block";
   }
-
-
 });
