@@ -1,12 +1,18 @@
-// const context = cast.framework.CastReceiverContext.getInstance();
-// const playerManager = context.getPlayerManager();
-// const iframe = document.getElementById("iframe");
+// Adicione este código para habilitar a ponte para o player no iframe
+const videoBridge = new cast.framework.PlaybackStateEventRelay();
+playerManager.setPlayerStateHandler(videoBridge);
 
-// const channel = context.getOrCreateCustomChannel('urn:x-cast:edm.webplayer');
-
-// channel.onMessage = (event) => {
-//   iframe.contentWindow.postMessage(event.data, "*");
-// };
+// Adicione este listener para capturar eventos vindos do iframe
+window.addEventListener('message', function(event) {
+    const data = event.data;
+    if (data.command === 'play') {
+        videoBridge.setPlaying();
+    } else if (data.command === 'pause') {
+        videoBridge.setPaused();
+    } else if (data.command === 'timeupdate') {
+        videoBridge.setMediaTime(data.currentTime);
+    }
+});
 
 document.addEventListener("DOMContentLoaded", function (event) {
   // Setting initial BG Image
@@ -117,63 +123,102 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
   );
 
- // Substitua o trecho de código em cast.js por este:
-// NOVO: Intercepta o comando de PAUSE e envia para o iframe
-// playerManager.setMessageInterceptor(
-//   cast.framework.messages.MessageType.PAUSE,
-//   (request) => {
-//     const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
-//     const iframe = document.getElementById("iframe-player");
-//     const isYouTube = iframe && iframe.src.includes('youtube');
+  // Substitua o trecho de código em cast.js por este:
+  // NOVO: Intercepta o comando de PAUSE e envia para o iframe
+  // playerManager.setMessageInterceptor(
+  //   cast.framework.messages.MessageType.PAUSE,
+  //   (request) => {
+  //     const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+  //     const iframe = document.getElementById("iframe-player");
+  //     const isYouTube = iframe && iframe.src.includes('youtube');
 
-//     if (isIframeMode && isYouTube) {
-//       // Envia a mensagem de "pause" para o iframe
-//       iframe.contentWindow.postMessage('pause_video', '*');
-//       console.log("Comando de PAUSE repassado para o iframe.");
-//       return null;
-//     }
-//     return request;
-//   }
-// );
+  //     if (isIframeMode && isYouTube) {
+  //       // Envia a mensagem de "pause" para o iframe
+  //       iframe.contentWindow.postMessage('pause_video', '*');
+  //       console.log("Comando de PAUSE repassado para o iframe.");
+  //       return null;
+  //     }
+  //     return request;
+  //   }
+  // );
 
-// // NOVO: Intercepta o comando de PLAY e envia para o iframe
-// playerManager.setMessageInterceptor(
-//   cast.framework.messages.MessageType.PLAY,
-//   (request) => {
-//     const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
-//     const iframe = document.getElementById("iframe-player");
-//     const isYouTube = iframe && iframe.src.includes('youtube');
+  // // NOVO: Intercepta o comando de PLAY e envia para o iframe
+  // playerManager.setMessageInterceptor(
+  //   cast.framework.messages.MessageType.PLAY,
+  //   (request) => {
+  //     const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+  //     const iframe = document.getElementById("iframe-player");
+  //     const isYouTube = iframe && iframe.src.includes('youtube');
 
-//     if (isIframeMode && isYouTube) {
-//       // Envia a mensagem de "begin_video" para o iframe
-//       iframe.contentWindow.postMessage('begin_video', '*');
-//       console.log("Comando de PLAY repassado para o iframe.");
-//       return null;
-//     }
-//     return request;
-//   }
-// );
+  //     if (isIframeMode && isYouTube) {
+  //       // Envia a mensagem de "begin_video" para o iframe
+  //       iframe.contentWindow.postMessage('begin_video', '*');
+  //       console.log("Comando de PLAY repassado para o iframe.");
+  //       return null;
+  //     }
+  //     return request;
+  //   }
+  // );
 
-  playerManager.addEventListener(cast.framework.events.EventType.PLAY, () => {
-    const iframe = document.getElementById("iframe-player");
-    if (iframe) {
-      iframe.contentWindow.postMessage({type: 'play'}, '*');
+  // playerManager.addEventListener(
+  //   cast.framework.events.EventType.PLAY,
+  //   (event) => {
+  //     const iframe = document.getElementById("iframe-player");
+  //     if (iframe) {
+  //       iframe.contentWindow.postMessage("play_video", "*");
+  //       console.log("Comando de PLAY repassado para o iframe.");
+  //     }
+  //   }
+  // );
+
+  // playerManager.addEventListener(
+  //   cast.framework.events.EventType.PLAYER_LOAD_COMPLETE,
+  //   (event) => {
+  //     console.log("PLAYER_LOAD_COMPLETE");
+  //     const castMediaElement = document.getElementById("castMediaElement");
+  //     console.log(castMediaElement);
+  //   }
+  // );
+
+  // Substitua o seu MessageInterceptor de PLAY/PAUSE com este código refatorado
+
+  // Intercepta o comando de PAUSE e envia para o iframe
+  playerManager.setMessageInterceptor(
+    cast.framework.messages.MessageType.PAUSE,
+    (request) => {
+      // Verifica se o modo iframe está ativo
+      const isIframeMode =
+        document.getElementById("iframe-wrapper").style.display === "block";
+
+      if (isIframeMode) {
+        const iframe = document.getElementById("iframe-player");
+        if (iframe && iframe.contentWindow) {
+          // Envia a mensagem de "pause" para o iframe
+          iframe.contentWindow.postMessage({ command: "pause" }, "*");
+        }
+        return true; // Retorna true para usar o manipulador de estado personalizado
+      }
+      return request;
     }
-  });
+  );
 
-  playerManager.addEventListener(cast.framework.events.EventType.PAUSE, () => {
-    const iframe = document.getElementById("iframe-player");
-    if (iframe) {
-      iframe.contentWindow.postMessage({type: 'pause'}, '*');
-    }
-  });
+  // Intercepta o comando de PLAY e envia para o iframe
+  playerManager.setMessageInterceptor(
+    cast.framework.messages.MessageType.PLAY,
+    (request) => {
+      // Verifica se o modo iframe está ativo
+      const isIframeMode =
+        document.getElementById("iframe-wrapper").style.display === "block";
 
-  playerManager.addEventListener(
-    cast.framework.events.EventType.PLAYER_LOAD_COMPLETE,
-    (event) => {
-      console.log("PLAYER_LOAD_COMPLETE");
-      const castMediaElement = document.getElementById("castMediaElement");
-      console.log(castMediaElement);
+      if (isIframeMode) {
+        const iframe = document.getElementById("iframe-player");
+        if (iframe && iframe.contentWindow) {
+          // Envia a mensagem de "play" para o iframe
+          iframe.contentWindow.postMessage({ command: "play" }, "*");
+        }
+        return true; // Retorna true para usar o manipulador de estado personalizado
+      }
+      return request;
     }
   );
 
