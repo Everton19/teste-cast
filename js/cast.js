@@ -1,12 +1,12 @@
-const context = cast.framework.CastReceiverContext.getInstance();
-const playerManager = context.getPlayerManager();
-const iframe = document.getElementById("iframe");
+// const context = cast.framework.CastReceiverContext.getInstance();
+// const playerManager = context.getPlayerManager();
+// const iframe = document.getElementById("iframe");
 
-const channel = context.getOrCreateCustomChannel('urn:x-cast:edm.webplayer');
+// const channel = context.getOrCreateCustomChannel('urn:x-cast:edm.webplayer');
 
-channel.onMessage = (event) => {
-  iframe.contentWindow.postMessage(event.data, "*");
-};
+// channel.onMessage = (event) => {
+//   iframe.contentWindow.postMessage(event.data, "*");
+// };
 
 document.addEventListener("DOMContentLoaded", function (event) {
   // Setting initial BG Image
