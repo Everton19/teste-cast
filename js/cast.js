@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
             }
           } else if (lesson.action && lesson.action.url) {
             // Aqui você decide exibir no iframe
-            showIframePlayer('https://www.youtube.com/watch?v=xiSMK46vtoI&ab_channel=CortesDosStreamers%5BOFICIAL%5D');
+            showIframePlayer(lesson.action.url);
             // Não precisa setar request.media!
             return null; // impede que o CAF tente tocar algo
           }
