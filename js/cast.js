@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
               const fileExtension = videoURL.split(".").pop();
               if (fileExtension == "mp4") contentType = "video/mp4";
             }
-          } else if (lesson.action && lesson.action.url) {
+          } else if (lesson && lesson.action && lesson.action.url) {
             // Aqui você decide exibir no iframe
             showIframePlayer(lesson.action.url);
             // Não precisa setar request.media!
@@ -287,7 +287,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
   );
 
   // HTTP functions
-  function getLessonDetails(lessonId, authUserToken, callback) {
+  async function getLessonDetails(lessonId, authUserToken, callback) {
     var xmlHttp = new XMLHttpRequest();
     if (typeof lessonId == "undefined") reject(JSON.parse([]));
     xmlHttp.open("GET", api + "app/lessons/" + lessonId + "/auth", false);
