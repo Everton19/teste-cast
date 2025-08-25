@@ -1,3 +1,13 @@
+const context = cast.framework.CastReceiverContext.getInstance();
+const playerManager = context.getPlayerManager();
+const iframe = document.getElementById("iframe");
+
+const channel = context.getOrCreateCustomChannel('urn:x-cast:edm.webplayer');
+
+channel.onMessage = (event) => {
+  iframe.contentWindow.postMessage(event.data, "*");
+};
+
 document.addEventListener("DOMContentLoaded", function (event) {
   // Setting initial BG Image
   //document.body.style.backgroundImage = 'url(/assets/images/bg01.jpg)';
@@ -109,40 +119,54 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
  // Substitua o trecho de código em cast.js por este:
 // NOVO: Intercepta o comando de PAUSE e envia para o iframe
-playerManager.setMessageInterceptor(
-  cast.framework.messages.MessageType.PAUSE,
-  (request) => {
-    const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+// playerManager.setMessageInterceptor(
+//   cast.framework.messages.MessageType.PAUSE,
+//   (request) => {
+//     const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+//     const iframe = document.getElementById("iframe-player");
+//     const isYouTube = iframe && iframe.src.includes('youtube');
+
+//     if (isIframeMode && isYouTube) {
+//       // Envia a mensagem de "pause" para o iframe
+//       iframe.contentWindow.postMessage('pause_video', '*');
+//       console.log("Comando de PAUSE repassado para o iframe.");
+//       return null;
+//     }
+//     return request;
+//   }
+// );
+
+// // NOVO: Intercepta o comando de PLAY e envia para o iframe
+// playerManager.setMessageInterceptor(
+//   cast.framework.messages.MessageType.PLAY,
+//   (request) => {
+//     const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+//     const iframe = document.getElementById("iframe-player");
+//     const isYouTube = iframe && iframe.src.includes('youtube');
+
+//     if (isIframeMode && isYouTube) {
+//       // Envia a mensagem de "begin_video" para o iframe
+//       iframe.contentWindow.postMessage('begin_video', '*');
+//       console.log("Comando de PLAY repassado para o iframe.");
+//       return null;
+//     }
+//     return request;
+//   }
+// );
+
+  playerManager.addEventListener(cast.framework.events.EventType.PLAY, () => {
     const iframe = document.getElementById("iframe-player");
-    const isYouTube = iframe && iframe.src.includes('youtube');
-
-    if (isIframeMode && isYouTube) {
-      // Envia a mensagem de "pause" para o iframe
-      iframe.contentWindow.postMessage('pause_video', '*');
-      console.log("Comando de PAUSE repassado para o iframe.");
-      return null;
+    if (iframe) {
+      iframe.contentWindow.postMessage({type: 'play'}, '*');
     }
-    return request;
-  }
-);
+  });
 
-// NOVO: Intercepta o comando de PLAY e envia para o iframe
-playerManager.setMessageInterceptor(
-  cast.framework.messages.MessageType.PLAY,
-  (request) => {
-    const isIframeMode = document.getElementById("iframe-wrapper").style.display === "block";
+  playerManager.addEventListener(cast.framework.events.EventType.PAUSE, () => {
     const iframe = document.getElementById("iframe-player");
-    const isYouTube = iframe && iframe.src.includes('youtube');
-
-    if (isIframeMode && isYouTube) {
-      // Envia a mensagem de "begin_video" para o iframe
-      iframe.contentWindow.postMessage('begin_video', '*');
-      console.log("Comando de PLAY repassado para o iframe.");
-      return null;
+    if (iframe) {
+      iframe.contentWindow.postMessage({type: 'pause'}, '*');
     }
-    return request;
-  }
-);
+  });
 
   playerManager.addEventListener(
     cast.framework.events.EventType.PLAYER_LOAD_COMPLETE,
