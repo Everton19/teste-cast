@@ -340,10 +340,15 @@ document.addEventListener("DOMContentLoaded", function (event) {
   }
 
   function showIframePlayer(url) {
-    document.getElementById("video").style.display = "none";
-    document.getElementById("iframe-wrapper").style.display = "block";
-    document.getElementById("iframe-player").src = url;
-  }
+  console.log("[Receiver] showIframePlayer", url);
+  document.getElementById("video").style.display = "none";
+  document.getElementById("iframe-wrapper").style.display = "block";
+  const iframe = document.getElementById("iframe-player");
+  iframe.src = url;
+  iframe.onload = function() {
+    console.log("[Receiver] Iframe loaded:", iframe.src);
+  };
+}
 
   function showCastPlayer() {
     document.getElementById("iframe-wrapper").style.display = "none";
