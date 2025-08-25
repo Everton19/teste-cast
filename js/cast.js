@@ -128,21 +128,37 @@ document.addEventListener("DOMContentLoaded", function (event) {
   );
 
   // NOVO: Intercepta o comando de PLAY e envia para o iframe
+  // playerManager.setMessageInterceptor(
+  //   cast.framework.messages.MessageType.PLAY,
+  //   (request) => {
+  //     const isIframeMode =
+  //       document.getElementById("iframe-wrapper").style.display === "block";
+  //     const iframe = document.getElementById("iframe-player");
+  //     const isYouTube = iframe && iframe.src.includes("youtube");
+
+  //     if (isIframeMode && isYouTube) {
+  //       // Envia a mensagem de "begin_video" para o iframe
+  //       iframe.contentWindow.postMessage("begin_video", "*");
+  //       console.log("Comando de PLAY repassado para o iframe.");
+  //       return null;
+  //     }
+  //     return request;
+  //   }
+  // );
+
+  // PLAY
   playerManager.setMessageInterceptor(
     cast.framework.messages.MessageType.PLAY,
-    (request) => {
-      const isIframeMode =
+    (req) => {
+      const isIframe =
         document.getElementById("iframe-wrapper").style.display === "block";
-      const iframe = document.getElementById("iframe-player");
-      const isYouTube = iframe && iframe.src.includes("youtube");
-
-      if (isIframeMode && isYouTube) {
-        // Envia a mensagem de "begin_video" para o iframe
-        iframe.contentWindow.postMessage("begin_video", "*");
-        console.log("Comando de PLAY repassado para o iframe.");
+      if (isIframe) {
+        document
+          .getElementById("iframe-player")
+          .contentWindow.postMessage("begin_video", "*");
         return null;
       }
-      return request;
+      return req;
     }
   );
 
