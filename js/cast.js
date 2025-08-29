@@ -1,201 +1,174 @@
 document.addEventListener("DOMContentLoaded", function (event) {
-  // Setting initial BG Image
-  //document.body.style.backgroundImage = 'url(/assets/images/bg01.jpg)';
-// Dentro de cast.js, no evento 'DOMContentLoaded'
+  let customDuration = 0;
+  let customCurrentTime = 0;
 
-// No seu cast.js, dentro de `document.addEventListener("DOMContentLoaded", ...)`
-
-window.addEventListener('message', function(event) {
-    if (event.data === 'playerIsReadyToPlay') {
-        const currentTime = event.detail.plyr.currentTime;
-        const duration = event.detail.plyr.duration;
-        const mediaInformation = new cast.framework.messages.MediaInformation({
-            contentId: 'youtube_video_' + lessonId, // Use um ID único
-            contentType: 'video/mp4', // Ou 'video/youtube' se houver um tipo específico
-            duration: duration,
-            contentUrl: document.getElementById("iframe-player").src,
-            streamType: cast.framework.messages.StreamType.BUFFERED,
-            media: new cast.framework.messages.MediaMetadata(
-                cast.framework.messages.MediaMetadata.MediaMetadataType.GENERIC
-            )
-        });
-
-        // Cria uma nova sessão de mídia
-        const mediaSession = playerManager.createMediaSession(mediaInformation);
-        // Atualiza o estado para PLAYING
-        mediaSession.playerState = cast.framework.messages.PlayerState.PLAYING;
-        // Atualiza o tempo de reprodução
-        mediaSession.currentTime = currentTime;
-
-        playerManager.broadcastStatus(true);
-        console.log("Nova sessão de mídia iniciada para o iframe.");
+  window.addEventListener("message", function (event) {
+    if (event.data.type === "DURATION") {
+      customDuration = event.data.value;
     }
+    if (event.data.type === "CURRENT_TIME") {
+      customCurrentTime = event.data.value;
+    }
+  });
 
-    
-    if (typeof event.data === 'string' && event.data.startsWith('currentTime:')) {
-        const currentTime = parseFloat(event.data.split(':')[1]);
-        const mediaSession = playerManager.getMediaSession();
-        if (mediaSession) {
-            mediaSession.currentTime = currentTime;
-            playerManager.broadcastStatus(false);
-        }
-    }
-    if (event.data === 'playing_video') {
-        const mediaSession = playerManager.getMediaSession();
-        if (mediaSession) {
-            mediaSession.playerState = cast.framework.messages.PlayerState.PLAYING;
-            playerManager.broadcastStatus(false);
-        }
-    }
-    if (event.data === 'paused_video') {
-        const mediaSession = playerManager.getMediaSession();
-        if (mediaSession) {
-            mediaSession.playerState = cast.framework.messages.PlayerState.PAUSED;
-            playerManager.broadcastStatus(false);
-        }
-    }
-});
   // Main cast variables
   const context = cast.framework.CastReceiverContext.getInstance();
   const playerManager = context.getPlayerManager();
 
   // Browse content
   document.title = "EDM CAST";
-
   // HTML elements and variables
   const video = document.getElementById("video");
   var videoURL = "_blank";
   var contentType = "";
-
   // Client variables
   var lessonId = 0;
   var userToken = "";
   var progressStand = -1;
   var isPost = false;
-
   // API variables
   var api = "https://api-verde.entregadigital.app.br/api/v1/";
   const apiExt = ".entregadigital.app.br/api/v1/app/";
   var clientName = "verde";
-
   // Player custom message interceptor
   playerManager.setMessageInterceptor(
     cast.framework.messages.MessageType.LOAD,
     (request) => {
-      video.removeAttribute("class");
-      // Debbuging
-      console.log("windowmessage: setMessageInterceptor on LOAD", request);
-      // Map contentId to entity
-      if (typeof request.media.customData != "undefined") {
-        lessonId = request.media.customData.contentId;
-        api = request.media.customData.apiURL;
-        userToken = request.media.customData.userToken;
-        isPost = request.media.customData.currentMediaType == "post";
-      }
-      if (isPost) {
-        getPostDetails(lessonId, userToken, (data) => {
-          const post = data;
-          if (typeof post.id == "undefined") return request;
-          if (post.hls != null && post.hls != undefined && post.hls !== "") {
-            videoURL = post.hls;
-            contentType = "video";
-            const fileExtension = videoURL.split(".").pop();
-            if (fileExtension == "m3u8") contentType = "application/x-mpegurl";
-            else if (fileExtension == "ts") contentType = "video/mp2t";
-            else if (fileExtension == "m4s") contentType = "video/mp4";
-          }
-          if (videoURL != "") {
-            request.media.contentUrl = videoURL;
-            clientName = api;
-            setClientLayout(clientName);
-          }
-        });
-      } else {
-        getLessonDetails(lessonId, userToken, (data) => {
-          const lesson = data;
-          if (typeof lesson.id == "undefined") return request;
-          if (
-            lesson.hls != null &&
-            lesson.hls != undefined &&
-            lesson.hls !== ""
-          ) {
-            showCastPlayer();
-            videoURL = lesson.hls;
-            contentType = "video";
-            const fileExtension = videoURL.split(".").pop();
-            if (fileExtension == "m3u8") contentType = "application/x-mpegurl";
-            else if (fileExtension == "ts") contentType = "video/mp2t";
-            else if (fileExtension == "m4s") contentType = "video/mp4";
-            else if (
-              lesson.file != null &&
-              lesson.file != undefined &&
-              lesson.file !== "" &&
-              (api.includes("vermelho") ||
-                api.includes("demo") ||
-                api.includes("rqxsystem"))
-            ) {
-              showCastPlayer();
-              videoURL = lesson.file;
+      return new Promise((resolve) => {
+        video.removeAttribute("class");
+        // Debbuging
+        console.log("windowmessage: setMessageInterceptor on LOAD", request);
+        // Map contentId to entity
+        if (typeof request.media.customData != "undefined") {
+          lessonId = request.media.customData.contentId;
+          api = request.media.customData.apiURL;
+          userToken = request.media.customData.userToken;
+          isPost = request.media.customData.currentMediaType == "post";
+        }
+        if (isPost) {
+          getPostDetails(lessonId, userToken, (data) => {
+            const post = data;
+            if (typeof post.id == "undefined") return request;
+            if (post.hls != null && post.hls != undefined && post.hls !== "") {
+              videoURL = post.hls;
               contentType = "video";
               const fileExtension = videoURL.split(".").pop();
-              if (fileExtension == "mp4") contentType = "video/mp4";
+              if (fileExtension == "m3u8")
+                contentType = "application/x-mpegurl";
+              else if (fileExtension == "ts") contentType = "video/mp2t";
+              else if (fileExtension == "m4s") contentType = "video/mp4";
             }
-          } else if (lesson.action && lesson.action.url) {
-            // Aqui você decide exibir no iframe
-            showIframePlayer(lesson.action.url);
-            // Não precisa setar request.media!
-            return null; // impede que o CAF tente tocar algo
-          }
-          if (videoURL != "") {
-            request.media.contentUrl = videoURL;
-            clientName = api;
-            setClientLayout(clientName);
-          }
-
-          console.log("LOAD request final:", request);
-          console.log("URL escolhida:", videoURL, "tipo:", contentType);
-        });
-      }
-      return request;
+            if (videoURL != "") {
+              request.media.contentUrl = videoURL;
+              clientName = api;
+              setClientLayout(clientName);
+            }
+          });
+        } else {
+          getLessonDetails(lessonId, userToken, (data) => {
+            const lesson = data;
+            if (typeof lesson.id == "undefined") return request;
+            if (
+              lesson.hls != null &&
+              lesson.hls != undefined &&
+              lesson.hls !== ""
+            ) {
+              showCastPlayer();
+              videoURL = lesson.hls;
+              contentType = "video";
+              const fileExtension = videoURL.split(".").pop();
+              if (fileExtension == "m3u8")
+                contentType = "application/x-mpegurl";
+              else if (fileExtension == "ts") contentType = "video/mp2t";
+              else if (fileExtension == "m4s") contentType = "video/mp4";
+              else if (
+                lesson.file != null &&
+                lesson.file != undefined &&
+                lesson.file !== "" &&
+                (api.includes("vermelho") ||
+                  api.includes("demo") ||
+                  api.includes("rqxsystem"))
+              ) {
+                showCastPlayer();
+                videoURL = lesson.file;
+                contentType = "video";
+                const fileExtension = videoURL.split(".").pop();
+                if (fileExtension == "mp4") contentType = "video/mp4";
+              }
+            }
+            if (lesson.video_host === "youtube") {
+              getFakeVideoData(lesson.action.url, (data) => {
+                request.media.contentUrl = data.fake_url;
+                request.media.contentType = "audio/mp3";
+                request.media.duration = data.duration;
+                request.autoPlay = false;
+                showIframePlayer(lesson.action.url, data);
+                resolve(request);
+              });
+              return;
+            }
+            if (videoURL != "") {
+              request.media.contentUrl = videoURL;
+              clientName = api;
+              setClientLayout(clientName);
+            }
+            console.log("LOAD request final:", request);
+            console.log("URL escolhida:", videoURL, "tipo:", contentType);
+          });
+        }
+        return request;
+      });
     }
   );
 
-  // Substitua o trecho de código em cast.js por este:
-  // NOVO: Intercepta o comando de PAUSE e envia para o iframe
+  // PAUSE
   playerManager.setMessageInterceptor(
     cast.framework.messages.MessageType.PAUSE,
     (request) => {
       const isIframeMode =
         document.getElementById("iframe-wrapper").style.display === "block";
       const iframe = document.getElementById("iframe-player");
-      const isYouTube = iframe && iframe.src.includes("youtube");
-
-      if (isIframeMode && isYouTube) {
-        // Envia a mensagem de "pause" para o iframe
-        iframe.contentWindow.postMessage("pause_video", "*");
-        console.log("Comando de PAUSE repassado para o iframe.");
-        return null;
+      const fakeVideo = document.getElementById("fake-video");
+      if (isIframeMode) {
+        if (iframe) iframe.contentWindow.postMessage("pause_video", "*");
+        if (fakeVideo) fakeVideo.pause();
+        return request;
       }
       return request;
     }
   );
 
-  // NOVO: Intercepta o comando de PLAY e envia para o iframe
+  // PLAY
   playerManager.setMessageInterceptor(
     cast.framework.messages.MessageType.PLAY,
     (request) => {
       const isIframeMode =
         document.getElementById("iframe-wrapper").style.display === "block";
       const iframe = document.getElementById("iframe-player");
-      const isYouTube = iframe && iframe.src.includes("youtube");
-
-      if (isIframeMode && isYouTube) {
-        // Envia a mensagem de "begin_video" para o iframe
-        iframe.contentWindow.postMessage("begin_video", "*");
-        console.log("Comando de PLAY repassado para o iframe.");
-        return null;
+      const fakeVideo = document.getElementById("fake-video");
+      if (isIframeMode) {
+        if (iframe) iframe.contentWindow.postMessage("play_video", "*");
+        if (fakeVideo && fakeVideo.paused) fakeVideo.play(); // <- IMPORTANTE!
+        return request;
       }
       return request;
+    }
+  );
+
+  playerManager.setMessageInterceptor(
+    cast.framework.messages.MessageType.SEEK,
+    (seekRequest) => {
+      const newTime = seekRequest.currentTime;
+      const iframe = document.getElementById("iframe-player");
+      const fakeVideo = document.getElementById("fake-video");
+      // Sincronize ambos!
+      if (iframe)
+        iframe.contentWindow.postMessage(
+          { action: "seek", time: newTime },
+          "*"
+        );
+      if (fakeVideo) fakeVideo.currentTime = newTime;
+      return null; // bloqueia seek padrão
     }
   );
 
@@ -205,6 +178,16 @@ window.addEventListener('message', function(event) {
       console.log("PLAYER_LOAD_COMPLETE");
       const castMediaElement = document.getElementById("castMediaElement");
       console.log(castMediaElement);
+    }
+  );
+
+  playerManager.addEventListener(
+    cast.framework.events.EventType.TIME_UPDATE,
+    (event) => {
+      const currentTime = event.currentMediaTime;
+      const duration = playerManager.getDurationSec();
+      const progress = currentTime / duration;
+      console.log("TIME_UPDATE:", { currentTime, duration, progress });
     }
   );
 
@@ -244,7 +227,6 @@ window.addEventListener('message', function(event) {
   );
 
   /* CONTEXT CUSTOM MESSAGES RECEIVERS */
-
   // Initialize context with custom messages
   var options = {
     customNamespaces: {
@@ -256,20 +238,8 @@ window.addEventListener('message', function(event) {
         cast.framework.system.MessageType.JSON,
     },
   };
-  context.start(options);
 
-  // Suponha que seu namespace seja 'urn:x-cast:br.com.edm.cast.controls'
-  context.addCustomMessageListener(
-    "urn:x-cast:br.com.edm.cast.controls",
-    function (event) {
-      console.log("Comando RECEBIDO no Chromecast:", event.data);
-      var iframe = document.getElementById("iframe-player");
-      if (iframe) {
-        console.log("-> Repassando para o player via postMessage");
-        iframe.contentWindow.postMessage(event.data, "*");
-      }
-    }
-  );
+  context.start(options);
 
   // Client name switch
   context.addCustomMessageListener(
@@ -279,16 +249,6 @@ window.addEventListener('message', function(event) {
       setClientLayout(api);
     }
   );
-
-  function setClientLocalLayout(clientNameData) {
-    clientName = clientNameData;
-    const initial = document.getElementById("player");
-    const logo = document.getElementById("logo");
-    initial.className = "show " + clientName;
-    logo.style.backgroundImage = "url(/assets/logos/" + clientName + ".png)";
-    document.title = clientName.toUpperCase();
-    api = "https://api-" + clientNameData + apiExt;
-  }
 
   //logo.style.backgroundImage = Deixa a url, por exemplo, https://ln.entregadigital.app.br/assets/images/img-logo-horiz.webp
   function setClientLayout(clientNameData) {
@@ -391,12 +351,56 @@ window.addEventListener('message', function(event) {
   }
 
   function showIframePlayer(url) {
-    document.getElementById("video").style.display = "none";
-    document.getElementById("iframe-wrapper").style.display = "block";
-    document.getElementById("iframe-player").src = url;
+    getFakeVideoData(url, (data) => {
+      let fakeVideo = document.getElementById("fake-video");
+      if (!fakeVideo) {
+        fakeVideo = document.createElement("video");
+        fakeVideo.id = "fake-video";
+        document.body.appendChild(fakeVideo);
+      }
+      fakeVideo.src = data.fake_url;
+      fakeVideo.style.width = "1px";
+      fakeVideo.style.height = "1px";
+      fakeVideo.muted = true;
+      fakeVideo.volume = 0;
+      fakeVideo.setAttribute("playsinline", "");
+      fakeVideo.style.display = "block";
+      fakeVideo.pause();
+
+      document.getElementById("video").style.display = "none";
+      var wrapper = document.getElementById("iframe-wrapper");
+      wrapper.innerHTML = "";
+      var iframe = document.createElement("iframe");
+      iframe.id = "iframe-player";
+      iframe.style.width = "100vw";
+      iframe.style.height = "100vh";
+      iframe.style.border = "none";
+      iframe.src = url;
+      iframe.allow = "autoplay";
+      console.log("Iframe player URL:", iframe.src);
+      iframe.onload = function () {
+        iframe.contentWindow.postMessage("pause_video", "*");
+      };
+      wrapper.appendChild(iframe);
+      wrapper.style.display = "block";
+    });
+  }
+
+  function getFakeVideoData(url, callback) {
+    fetch("https://mocki.io/v1/2a53876a-66eb-47a0-98f6-88b63b6e116f")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Dados do vídeo falso:", data);
+        callback(data);
+      });
   }
 
   function showCastPlayer() {
+    var iframe = document.getElementById("iframe-player");
+    if (iframe) {
+      iframe.remove();
+    }
+
     document.getElementById("iframe-wrapper").style.display = "none";
     document.getElementById("video").style.display = "block";
   }

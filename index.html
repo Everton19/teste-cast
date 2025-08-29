@@ -4,24 +4,24 @@
     <title>EDM CAST</title>
     <meta charset="UTF-8">
     <!-- Cast Receiver SDK -->
-    <script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js">
-    </script>
-    <!-- Stylesheet -->
-    <link rel="stylesheet" href="/assets/css/style.css">
-    <!-- Custom Font -->
+    <script type="text/javascript"
+        src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+    <!-- <script src="https://www.youtube.com/iframe_api"></script> -->
+    <!-- Stylesheet etc -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- Fonte -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <div id="video" class="hidden">
+    <video id="fake-video" style="display:none"></video>
+    <div id="video" style="display:none">
         <cast-media-player id="video-tag"></cast-media-player>
     </div>
-    <div id="iframe-wrapper" style="display:none;">
-        <iframe id="iframe-player" style="width:100vw; height:100vh; border:none;" allow="autoplay"></iframe>
-    </div>
-    <div id="video-id" class="hidden"></div>
+    <div id="iframe-wrapper" style="display:none"></div>
+    <div id="video-id" style="display:none;"></div>
     <script src="js/cast.js"></script>
 </body>
 
